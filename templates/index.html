@@ -10,10 +10,11 @@
       integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="styles.css" />
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css?family=Stylish&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Hi+Melody&family=Nanum+Myeongjo&display=swap"
       rel="stylesheet"
     />
 
@@ -21,8 +22,8 @@
 
     <!-- --- style --- -->
     <style>
-      .my-box {
-        background-color: lightgray;
+      .title-box {
+        background-color: rgb(211, 217, 228);
         margin-bottom: 20px;
         width: min(600px, 100%);
         min-height: 200px;
@@ -34,6 +35,8 @@
         top: 20px;
         left: 20px;
         margin: 0;
+        font-weight: 400;
+        font-size: 3rem;
       }
 
       .input-area {
@@ -46,44 +49,122 @@
         margin-left: 0;
       }
 
-      .form-check{
+      .form-check {
         padding-left: 0;
         margin-top: 20px;
       }
+
+      .card {
+        max-width: 300px;
+        height: 200px;
+      }
+
+      #card-box {
+        max-width: 650px;
+        margin: 0 auto;
+      }
+
+      .tag-btn{
+        margin-top: 80px;
+        margin-left: -5px;
+      }
+
     </style>
 
     <!-- ---Html--- -->
   </head>
   <body>
-    <div class="container-fluid my-box">
+    <div class="container-fluid title-box">
       <div>
-        <h2 class="title-text">나홀로메모장 <span>ver2.0</span></h2>
+        <div style="font-family: &quot;Hi Melody&quot;, sans-serif">
+          <h1 class="title-text">
+            나홀로메모장
+            <span style="background-color: gray; color: white">ver2.0</span>
+          </h1>
 
-        <div class="input-area">
-          <div class="input-group mb-3">
-            <input
-              type="text"
-              class="form-control"
-              aria-label="Sizing example input"
-              aria-describedby="inputGroup-sizing-default"
-            />
-          </div>
+          <div class="input-area">
+            <div class="input-group mb-3">
+              <input
+                type="text"
+                class="form-control"
+                id="title-text"
+                aria-label="Sizing example input"
+                aria-describedby="inputGroup-sizing-default"
+                style="font-family: &quot;Nanum Myeongjo&quot;, serif"
+              />
+            </div>
 
             <textarea
               type="text"
               class="form-control"
+              id="memo-text"
               aria-label="Sizing example input"
               aria-describedby="inputGroup-sizing-lg"
-              style="height: 100px"
+              style="
+                height: 100px;
+                margin-bottom: 20px;
+                font-family: &quot;Nanum Myeongjo&quot;, serif;
+              "
             ></textarea>
-            
+
             <div class="form-check mt-2 ms-0">
-            <input type="checkbox" class="btn-check" id="btn-check-2" checked autocomplete="off">
-            <label class="btn btn-primary" for="btn-check-2">Checked</label>
+              <input
+                type="checkbox"
+                class="btn-check"
+                id="btn-check-2"
+                checked
+                autocomplete="off"
+              />
+              <label class="btn btn-primary" for="btn-check-2">저장하기</label>
             </div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- 2열 카드 부트스트랩 -->
+     <div class="container" id="card-box">
+    <div class="row row-cols-1 row-cols-md-2 g-2">
+      <div class="col">
+        <div class="card mx-auto">
+          <div class="card-body">
+            <h5 class="card-title">카드1</h5>
+            <p class="card-text">
+              내용
+            </p>
+            <div class="tag-btn">
+            <a href="#" class="btn btn-primary">수정</a>
+            <a href="#" class="btn btn-primary">삭제</a>
+            <a href="#" class="btn btn-primary">좋아요!</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card mx-auto">
+          <div class="card-body">
+            <h5 class="card-title">카드2</h5>
+            <p class="card-text">
+              내용
+            </p>
+            <a href="#" class="btn btn-primary">수정</a>
+          </div>
+        </div>
+      </div>
+
+       <div class="col">
+        <div class="card mx-auto">
+          <div class="card-body">
+            <h5 class="card-title">카드3</h5>
+            <p class="card-text">
+              내용
+            </p>
+            <a href="#" class="btn btn-primary">수정</a>
+          </div>
+        </div>
+      </div>
+    </div>
     </div>
 
     <script
@@ -91,6 +172,16 @@
       integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
       crossorigin="anonymous"
     ></script>
-    <script src="main.js"></script>
   </body>
+
+  <!-- ---JavaScript--- -->
+  <script>
+    let titleText = document.getElementById("title-text");
+    let memoText = document.getElementById("memo-text");
+    let saveBox = document.getElementById("btn-check-2");
+
+    saveBox.addEventListener("click", function () {
+      console.log("clicked");
+    });
+  </script>
 </html>

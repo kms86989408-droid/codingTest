@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="styles.css" />
+
+    <link
+      href="https://fonts.googleapis.com/css?family=Stylish&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>나홀로메모장 ver2.0</title>
+
+    <!-- --- style --- -->
+    <style>
+      .my-box {
+        background-color: lightgray;
+        margin-bottom: 20px;
+        width: min(600px, 100%);
+        min-height: 200px;
+        position: relative;
+      }
+
+      .title-text {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        margin: 0;
+      }
+
+      .input-area {
+        padding: 80px 5vw 5vw 0; /* 위는 제목 공간 */
+      }
+
+      .input-group {
+        width: 100%;
+        margin-top: 20px;
+        margin-left: 0;
+      }
+    </style>
+
+    <!-- ---html--- -->
+  </head>
+  <body>
+    <div class="container-fluid my-box">
+      <div>
+        <h2 class="title-text">나홀로메모장 <span>ver2.0</span></h2>
+
+        <div class="input-area">
+          <div class="input-group mb-3">
+            <input
+              type="text"
+              class="form-control"
+              aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-default"
+            />
+          </div>
+
+          <div class="input-group input-group-lg">
+            <input
+              type="text"
+              class="form-control"
+              aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-lg"
+              style="height: 100px"
+            />
+
+            <input type="checkbox" class="btn-check" id="btn-check-2" checked autocomplete="off">
+            <label class="btn btn-primary" for="btn-check-2">Checked</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+    <script src="main.js"></script>
+  </body>
+</html>

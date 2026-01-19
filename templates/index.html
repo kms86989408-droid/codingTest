@@ -45,9 +45,14 @@
         margin-top: 20px;
         margin-left: 0;
       }
+
+      .form-check{
+        padding-left: 0;
+        margin-top: 20px;
+      }
     </style>
 
-    <!-- ---html--- -->
+    <!-- ---Html--- -->
   </head>
   <body>
     <div class="container-fluid my-box">
@@ -64,17 +69,18 @@
             />
           </div>
 
-          <div class="input-group input-group-lg">
-            <input
+            <textarea
               type="text"
               class="form-control"
               aria-label="Sizing example input"
               aria-describedby="inputGroup-sizing-lg"
               style="height: 100px"
-            />
-
+            ></textarea>
+            
+            <div class="form-check mt-2 ms-0">
             <input type="checkbox" class="btn-check" id="btn-check-2" checked autocomplete="off">
             <label class="btn btn-primary" for="btn-check-2">Checked</label>
+            </div>
           </div>
         </div>
       </div>

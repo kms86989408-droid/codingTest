@@ -160,14 +160,25 @@
               getMemos();
             });
 
-    $("#btn-check-2").on("click",savingMemos)
+    // 버튼 클릭 이벤트
+    $("#btn-check-2").on("click",savingMemos);
+
+    // Edit버튼 기능
+    $(document).on("click", ".edit-btn", function(){
+      let id = $(this).data("id");
+      console.log("edit", id);
+    })
+      
+    
 
     function savingMemos(){
       let memoTitle = titleText.val();
       let memoContents = memoText.val();
-
-      console.log("clicked");
-      console.log(memoTitle, memoContents);
+      
+      // 콘솔 확인용
+      // console.log("clicked");
+      // console.log(memoTitle, memoContents);
+      // -------------
 
       $.ajax({
         type:"POST",
@@ -178,7 +189,10 @@
             alert(response["msg"]||"저장 완료");
                   titleText.val("");
                   memoText.val("");
-            // window.location.reload();
+                  // 카드 업데이트
+                  $("#card-row").empty();
+                  getMemos();
+            
           } else{
             alert(response["msg"]||"저장 실패");
                 }
@@ -195,20 +209,32 @@
         url :"/memos",
         success: function(response){
           console.log("GET /memos response",response);
+          console.log("inventory[0] =", response.inventory[0]);
 
           if (response["result"] !== "success"){
             alert(response["msg"] ||"불러오기 실패")
             return;
           }
           let inventory=response["inventory"]||[];
+          // 콘솔 확인용
           console.log(`inventory length${inventory.length}`);
-
+          // -------------
           for (let i=0; i<inventory.length;i++){
+            // 콘솔 확인용
+            console.log(
+              "데이터불러오기",
+              inventory[i]["title"]||'제목 없음',
+              inventory[i]["contents"]||"내용 없음",
+              inventory[i]["_id"]
+            );
+            // -------------
+
             postMemos(
               inventory[i]["title"]||'제목 없음',
               inventory[i]["contents"]||"내용 없음",
               inventory[i]["_id"]
             );
+            
           }
         },
         error: function(xhr){
@@ -216,25 +242,25 @@
       }}
     )
     }
-
+    
     // 메모추가
-    function postMemos(title, contents, memo) {
+    function postMemos(title, contents, id) {
       let appendMemo= `
-      <div class="col" data-id="${memo._id}">
+      <div class="col" data-id="${id}">
         <div class="card mx-auto">
           <div class="card-body">
-            <h5 class="card-title">${memo.title}</h5>
-            <p class="overflow-hidden card-text">${memo.contents}</p>
+            <h5 class="card-title">${title}</h5>
+            <p class="overflow-hidden card-text">${contents}</p>
             <div class="tag-btn">
-              <a href="#" class="btn btn-primary" data-id="${memo._id}">
+              <button type="button" class="btn btn-primary edit-btn" data-id="${id}">
                 수정
-              </a>
-              <a href="#" class="btn btn-primary" data-id="${memo._id}">
+              </button>
+              <button type="button" class="btn btn-primary delete-btn" data-id="${id}">
                 삭제
-              </a>
-              <a href="#" class="btn btn-primary" data-id="${memo._id}">
+              </button>
+              <button type="button" class="btn btn-primary like-btn" data-id="${id}">
                 좋아요!
-              </a>
+              </button>
             </div>
           </div>
         </div>

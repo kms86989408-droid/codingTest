@@ -164,7 +164,7 @@
     $("#btn-check-2").on("click",savingMemos);
 
     // Edit버튼 기능
-    $(document).on("click", ".edit-btn", function(){
+    $(document).on("click", ".edit-btn", function editMode(){
       let id = $(this).data("id");
       console.log("edit", id);
     })

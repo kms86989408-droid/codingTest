@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -90,14 +92,14 @@
 
           <div class="input-area">
             <div class="input-group mb-3">
-              <input 
+              <input
                 type="text"
                 class="form-control"
                 id="title-text"
                 aria-label="Sizing example input"
                 aria-describedby="inputGroup-sizing-default"
                 style="font-family: &quot;Nanum Myeongjo&quot;, serif"
-                value="제목을 입력해주세요"
+                placeholder="제목을 입력해주세요"
               />
             </div>
 
@@ -107,12 +109,13 @@
               id="memo-text"
               aria-label="Sizing example input"
               aria-describedby="inputGroup-sizing-lg"
+              placeholder="내용을 입력해주세요"
               style="
                 height: 100px;
                 margin-bottom: 20px;
                 font-family: &quot;Nanum Myeongjo&quot;, serif;
-              "
-            >내용을 입력해주세요</textarea>
+                "
+            ></textarea>
 
             <div class="form-check mt-2 ms-0">
               <input
@@ -132,43 +135,19 @@
     <!-- 2열 카드 부트스트랩 -->
     <div class="container" id="card-box">
       <div class="row row-cols-1 row-cols-md-2 g-2">
+        <!-- 카드가 추가될 자리 -->
         <div class="col">
           <div class="card mx-auto">
             <div class="card-body">
               <h5 class="card-title">카드1</h5>
-              <p class="overflow-hidden card-text">
-                이 박스가 메인
-              </p>
+              <p class="overflow-hidden card-text">이 박스가 메인</p>
               <div class="tag-btn">
-                <a href="#" class="btn btn-primary">수정</a>
-                <a href="#" class="btn btn-primary">삭제</a>
-                <a href="#" class="btn btn-primary">좋아요!</a>
+                <a href="#" class="btn btn-primary" id="edit-btn">수정</a>
+                <a href="#" class="btn btn-primary" id="delete-btn">삭제</a>
+                <a href="#" class="btn btn-primary" id="like-btn">좋아요!</a>
               </div>
             </div>
           </div>
-        </div>
-
-        <div class="col">
-          <div class="card mx-auto">
-            <div class="card-body">
-              <h5 class="card-title">카드2</h5>
-              <p class="card-text">내용</p>
-              <a href="#" class="btn btn-primary">수정</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="col">
-          <div class="card mx-auto">
-            <div class="card-body">
-              <h5 class="card-title">카드3</h5>
-              <p class="card-text">내용</p>
-              <a href="#" class="btn btn-primary">수정</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
@@ -179,12 +158,93 @@
 
   <!-- ---JavaScript--- -->
   <script>
-    let titleText = document.getElementById("title-text");
-    let memoText = document.getElementById("memo-text");
-    let saveBox = document.getElementById("btn-check-2");
+    let titleText = $("#title-text");
+    let memoText = $("#memo-text");
+    let saveBox = $("#btn-check-2");
+    let editBtn = $("#edit-btn");
+    let deleteBtn = $("#delete-btn");
+    let likeBtn = $("#like-btn");
 
-    saveBox.addEventListener("click", function () {
+    $("#btn-check-2").on("click",savingMemos)
+
+    function savingMemos(){
+      let memoTitle = titleText.val();
+      let memoContents = memoText.val();
+
       console.log("clicked");
-    });
+      console.log(memoTitle, memoContents);
+
+      $.ajax({
+        type:"POST",
+        url :"/memos",
+        data : {memoTitle_give:memoTitle, memoContents_give:memoContents},
+        success: function(response){
+          if(response["result"]=="success"){
+            alert(response["msg"]||"저장 완료");
+                  titleText.val("");
+                  memoText.val("");
+            // window.location.reload();
+          } else{
+            alert(response["msg"]||"저장 실패");
+                }
+          },
+        error: function(xhr){
+          alert(`요청실패 ${xhr.status}`);
+        }
+        })
+      }
+
+    function getMemos(){
+      $.ajax({
+        type:"GET",
+        url :"/memos",
+        success: function(response){
+          console.log("GET /memos response",response);
+
+          if (response["result"] !== "success"){
+            alert(response["msg"] ||"불러오기 실패")
+            return;
+          }
+          let inventory=response["inventory"]||[];
+          console.log(`inventory length${inventory.length}`);
+
+          for (let i=0; i<inventory.length;i++){
+            postMemos(
+              inventory[i]["title"]||'제목 없음',
+              inventory[i]["contents"]||"내용 없음"
+            );
+          }
+        },
+        error: function(xhr){
+          alert(`요청실패 ${xhr.status}`);
+      }}
+    )
+    }
+
+    // 메모추가
+    function postMemos(title, contents) {
+      let appendMemo= `
+      <div class="col" data-id="${memo._id}">
+        <div class="card mx-auto">
+          <div class="card-body">
+            <h5 class="card-title">${memo.title}</h5>
+            <p class="overflow-hidden card-text">${memo.contents}</p>
+            <div class="tag-btn">
+              <a href="#" class="btn btn-primary" data-id="${memo._id}">
+                수정
+              </a>
+              <a href="#" class="btn btn-primary" data-id="${memo._id}">
+                삭제
+              </a>
+              <a href="#" class="btn btn-primary" data-id="${memo._id}">
+                좋아요!
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>`;
+      $("#card-box").append(appendMemo);
+      console.log('카드생성완료')
+    }
   </script>
 </html>

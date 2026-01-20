@@ -35,7 +35,7 @@ def saving_memos():
 
 @app.route("/memos", methods=["GET"])
 def read_inventory():    
-    memos = list(memos_col.find({}, {"title":1, "contents":1}))
+    memos = list(memos_col.find({}))
     for m in memos:
         m["_id"] = str(m["_id"])
     return jsonify({'result':"success", 'inventory': memos})

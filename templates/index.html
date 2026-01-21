@@ -65,6 +65,7 @@
         display: flex;
         flex-direction: column;
         height: 100%;
+        justify-content: flex-start;
       }
 
       #card-box {
@@ -76,6 +77,13 @@
         margin-top: auto;
         display: flex;
         gap: 6px;
+      }
+
+      .edit-saveBtn {
+        margin-top: 5px;
+        width: 50px;
+        background-color: rgb(23, 173, 23);
+        font-size: 14px;
       }
     </style>
 
@@ -114,7 +122,7 @@
                 height: 100px;
                 margin-bottom: 20px;
                 font-family: &quot;Nanum Myeongjo&quot;, serif;
-                "
+              "
             ></textarea>
 
             <div class="form-check mt-2 ms-0">
@@ -155,97 +163,160 @@
     let deleteBtn = $("#delete-btn");
     let likeBtn = $("#like-btn");
 
-      $(document).ready(function () {
-              $("#card-row").html("");
-              getMemos();
-            });
+    $(document).ready(function () {
+      $("#card-row").html("");
+      getMemos();
+    });
 
     // 버튼 클릭 이벤트
-    $("#btn-check-2").on("click",savingMemos);
+    $("#btn-check-2").on("click", savingMemos);
 
-    // Edit버튼 기능
-    $(document).on("click", ".edit-btn", function editMode(){
+    // 수정 창 열림
+    $(document).on("click", ".edit-btn", function editMode() {
+      // 선택Id 찾기
       let id = $(this).data("id");
-      console.log("edit", id);
-    })
-      
-    
+      // console.log("edit", id);
 
-    function savingMemos(){
+      let $thisCard = $(this).closest(".card");
+      let $body = $thisCard.find(".card-body");
+      // console.log($thisCard, $body);
+
+      if ($thisCard.find(".edit-form").length > 0) {
+        return;
+      }
+
+      let originTitle = $thisCard.find(".card-title").text();
+      let originContents = $thisCard.find(".card-text").text();
+
+      $thisCard.find(".card-title, .card-text, .tag-btn").hide();
+
+      let editForm = `
+      <div class = "edit-form" data-id="${id}">
+        <input type="text" class="form-control mb-2 edit-title" value="${originTitle}">
+        <textarea class="form-control edit-contents" rows="3">${originContents}</textarea>
+        <button type="button" class="btn btn-primary btn-sm edit-saveBtn">저장</button>
+        </div>
+        `;
+
+      $body.append(editForm);
+    });
+
+    //  수정 내용 저장
+    $(document).on("click", ".edit-saveBtn", function () {
+      let $editForm = $(this).closest(".edit-form");
+      let editId = $editForm.data("id");
+
+      let editTitle = $editForm.find(".edit-title").val();
+      let editContents = $editForm.find(".edit-contents").val();
+
+      // console.log("수정저장:", editId, editTitle, editContents);
+
+      let $cardBody = $editForm.closest(".card-body");
+      $editForm.remove();
+      $cardBody.find(".card-title, .card-text, .tag-btn").show();
+      // console.log("card-body found:", $cardBody.length);
+
+      $.ajax({
+        type: "PUT",
+        url: "/memos",
+        data: {
+          editId_give: editId,
+          editTitle_give: editTitle,
+          editContents_give: editContents,
+        },
+        success: function (response) {
+          if (response["result"] == "success") {
+            $cardBody.find(".card-title").text(editTitle);
+            $cardBody.find(".card-text").text(editContents);
+            $editForm.remove();
+            $cardBody.find(".card-title, .card-text, .tag-btn").show();
+            // console.log("card-body found:", $cardBody.length);
+            alert(response["msg"] || "수정 완료");
+            titleText.val("");
+            memoText.val("");
+          } else {
+            alert(response["msg"] || "수정실패");
+          }
+        },
+        error: function (xhr) {
+          alert(`요청실패 ${xhr.status}`);
+        },
+      });
+    });
+
+    function savingMemos() {
       let memoTitle = titleText.val();
       let memoContents = memoText.val();
-      
+
       // 콘솔 확인용
       // console.log("clicked");
       // console.log(memoTitle, memoContents);
       // -------------
 
       $.ajax({
-        type:"POST",
-        url :"/memos",
-        data : {memoTitle_give:memoTitle, memoContents_give:memoContents},
-        success: function(response){
-          if(response["result"]=="success"){
-            alert(response["msg"]||"저장 완료");
-                  titleText.val("");
-                  memoText.val("");
-                  // 카드 업데이트
-                  $("#card-row").empty();
-                  getMemos();
-            
-          } else{
-            alert(response["msg"]||"저장 실패");
-                }
-          },
-        error: function(xhr){
+        type: "POST",
+        url: "/memos",
+        data: { memoTitle_give: memoTitle, memoContents_give: memoContents },
+        success: function (response) {
+          if (response["result"] == "success") {
+            alert(response["msg"] || "저장 완료");
+            titleText.val("");
+            memoText.val("");
+            // 카드 업데이트
+            $("#card-row").empty();
+            getMemos();
+          } else {
+            alert(response["msg"] || "저장 실패");
+          }
+        },
+        error: function (xhr) {
           alert(`요청실패 ${xhr.status}`);
-        }
-        })
-      }
+        },
+      });
+    }
 
-    function getMemos(){
+    function getMemos() {
       $.ajax({
-        type:"GET",
-        url :"/memos",
-        success: function(response){
-          console.log("GET /memos response",response);
-          console.log("inventory[0] =", response.inventory[0]);
+        type: "GET",
+        url: "/memos",
+        success: function (response) {
+          // console.log("GET /memos response", response);
+          // console.log("inventory[0] =", response.inventory[0]);
 
-          if (response["result"] !== "success"){
-            alert(response["msg"] ||"불러오기 실패")
+          if (response["result"] !== "success") {
+            alert(response["msg"] || "불러오기 실패");
             return;
           }
-          let inventory=response["inventory"]||[];
+          let inventory = response["inventory"] || [];
           // 콘솔 확인용
-          console.log(`inventory length${inventory.length}`);
+          // console.log(`inventory length${inventory.length}`);
           // -------------
-          for (let i=0; i<inventory.length;i++){
+          for (let i = 0; i < inventory.length; i++) {
             // 콘솔 확인용
-            console.log(
-              "데이터불러오기",
-              inventory[i]["title"]||'제목 없음',
-              inventory[i]["contents"]||"내용 없음",
-              inventory[i]["_id"]
-            );
+            // console.log(
+            //   "데이터불러오기",
+            //   inventory[i]["title"] || "제목 없음",
+            //   inventory[i]["contents"] || "내용 없음",
+            //   inventory[i]["_id"],
+            // );
             // -------------
 
             postMemos(
-              inventory[i]["title"]||'제목 없음',
-              inventory[i]["contents"]||"내용 없음",
-              inventory[i]["_id"]
+              inventory[i]["title"] || "제목 없음",
+              inventory[i]["contents"] || "내용 없음",
+              inventory[i]["_id"],
             );
-            
           }
         },
-        error: function(xhr){
+        error: function (xhr) {
           alert(`요청실패 ${xhr.status}`);
-      }}
-    )
+        },
+      });
     }
-    
+
     // 메모추가
     function postMemos(title, contents, id) {
-      let appendMemo= `
+      let appendMemo = `
       <div class="col" data-id="${id}">
         <div class="card mx-auto">
           <div class="card-body">
@@ -266,7 +337,7 @@
         </div>
       </div>`;
       $("#card-row").append(appendMemo);
-      console.log('카드생성완료')
+      // console.log("카드생성완료");
     }
   </script>
 </html>

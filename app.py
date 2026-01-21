@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify, request
 
+from bson.objectid import ObjectId
 from pymongo import MongoClient
 client = MongoClient('mongodb://localhost:27017/')
 db = client.dbjungle
@@ -40,6 +41,23 @@ def read_inventory():
         m["_id"] = str(m["_id"])
     return jsonify({'result':"success", 'inventory': memos})
 
+
+@app.route("/memos", methods=["PUT"])
+def edit_memos():
+    editId_receive=request.form['editId_give']
+    editTitle_receive=request.form['editTitle_give']
+    editContents_receive=request.form['editContents_give']
+    
+    try:
+        result = memos_col.update_one(
+        {"_id": ObjectId(editId_receive)},
+        {"$set":{"title":editTitle_receive, "contents":editContents_receive}}
+    )
+        if result.matched_count == 0:
+            return jsonify({'result':'fail', 'msg':'메모를 찾지 못햇습니다.'})
+        return jsonify({'result':'success', 'msg':'수정 완료'})
+    except Exception as e:
+        return jsonify({'result': 'fail', 'msg': str(e)})
 
 if __name__ == "__main__":
     app.run("0.0.0.0", port=5000, debug=True)

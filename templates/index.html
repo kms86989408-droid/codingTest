@@ -1,4 +1,4 @@
-<!doctype html>
+d<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -85,6 +85,14 @@
         background-color: rgb(23, 173, 23);
         font-size: 14px;
       }
+
+      .like-count{
+        max-width: 50px;
+        margin-top: 20px;
+        text-align: center;
+      }
+
+
     </style>
 
     <!-- ---Html--- -->
@@ -159,9 +167,6 @@
     let titleText = $("#title-text");
     let memoText = $("#memo-text");
     let saveBox = $("#btn-check-2");
-    let editBtn = $("#edit-btn");
-    let deleteBtn = $("#delete-btn");
-    let likeBtn = $("#like-btn");
 
     $(document).ready(function () {
       $("#card-row").html("");
@@ -172,15 +177,13 @@
     $("#btn-check-2").on("click", savingMemos);
 
     // 수정 창 열림
-    $(document).on("click", ".edit-btn", function editMode() {
+    $(document).on("click", ".edit-btn", function () {
       // 선택Id 찾기
-      let id = $(this).data("id");
-      // console.log("edit", id);
-
+      let editId = $(this).data("id");
+      
       let $thisCard = $(this).closest(".card");
       let $body = $thisCard.find(".card-body");
-      // console.log($thisCard, $body);
-
+      
       if ($thisCard.find(".edit-form").length > 0) {
         return;
       }
@@ -188,10 +191,10 @@
       let originTitle = $thisCard.find(".card-title").text();
       let originContents = $thisCard.find(".card-text").text();
 
-      $thisCard.find(".card-title, .card-text, .tag-btn").hide();
+      $thisCard.find(".card-title, .card-text, .tag-btn, .like-count").hide();
 
       let editForm = `
-      <div class = "edit-form" data-id="${id}">
+      <div class = "edit-form" data-id="${editId}">
         <input type="text" class="form-control mb-2 edit-title" value="${originTitle}">
         <textarea class="form-control edit-contents" rows="3">${originContents}</textarea>
         <button type="button" class="btn btn-primary btn-sm edit-saveBtn">저장</button>
@@ -209,12 +212,12 @@
       let editTitle = $editForm.find(".edit-title").val();
       let editContents = $editForm.find(".edit-contents").val();
 
-      // console.log("수정저장:", editId, editTitle, editContents);
+      
 
       let $cardBody = $editForm.closest(".card-body");
       $editForm.remove();
       $cardBody.find(".card-title, .card-text, .tag-btn").show();
-      // console.log("card-body found:", $cardBody.length);
+      // console.log("card-body found:", $cardBody.length); 버그 확인용
 
       $.ajax({
         type: "PUT",
@@ -229,13 +232,13 @@
             $cardBody.find(".card-title").text(editTitle);
             $cardBody.find(".card-text").text(editContents);
             $editForm.remove();
-            $cardBody.find(".card-title, .card-text, .tag-btn").show();
-            // console.log("card-body found:", $cardBody.length);
+            $cardBody.find(".card-title, .card-text, .tag-btn, .like-count").show();
+            // console.log("card-body found:", $cardBody.length); 버그 확인용
             alert(response["msg"] || "수정 완료");
             titleText.val("");
             memoText.val("");
           } else {
-            alert(response["msg"] || "수정실패");
+            alert(response["msg"] || "수정 실패");
           }
         },
         error: function (xhr) {
@@ -244,19 +247,45 @@
       });
     });
 
+    // 삭제 기능
+    $(document).on("click", ".delete-btn", function (){
+      // 선택Id 찾기
+      let deleteId = $(this).data("id");
+
+      $.ajax({
+        type:"POST",
+        url: "/memos/delete",
+        data:{
+          deleteId_give: deleteId
+        },
+        success: function(response){
+          if(response["result"] == "success"){
+            $("#card-row").empty();
+            getMemos();
+            alert(response["msg"]||"삭제 완료")
+          }else{
+            alert(response["msg"]||"삭제 실패")
+          }
+        },
+        error: function(xhr){
+          alert(`요청실패${xhr.status}`);
+        }
+      })
+      
+    })
+
+    // 좋아요 기능
+
+
     function savingMemos() {
       let memoTitle = titleText.val();
       let memoContents = memoText.val();
-
-      // 콘솔 확인용
-      // console.log("clicked");
-      // console.log(memoTitle, memoContents);
-      // -------------
+      let memoLikes = 0;
 
       $.ajax({
         type: "POST",
         url: "/memos",
-        data: { memoTitle_give: memoTitle, memoContents_give: memoContents },
+        data: { memoTitle_give: memoTitle, memoContents_give: memoContents, memoLikes_give: memoLikes },
         success: function (response) {
           if (response["result"] == "success") {
             alert(response["msg"] || "저장 완료");
@@ -305,6 +334,7 @@
               inventory[i]["title"] || "제목 없음",
               inventory[i]["contents"] || "내용 없음",
               inventory[i]["_id"],
+              inventory[i]["likes"]
             );
           }
         },
@@ -315,13 +345,14 @@
     }
 
     // 메모추가
-    function postMemos(title, contents, id) {
+    function postMemos(title, contents, id, likes = 0) {
       let appendMemo = `
       <div class="col" data-id="${id}">
         <div class="card mx-auto">
           <div class="card-body">
             <h5 class="card-title">${title}</h5>
             <p class="overflow-hidden card-text">${contents}</p>
+            <div class="like-count" data-id="${id}"">${likes}</div>
             <div class="tag-btn">
               <button type="button" class="btn btn-primary edit-btn" data-id="${id}">
                 수정

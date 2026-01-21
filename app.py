@@ -17,10 +17,12 @@ def home():
 def saving_memos():
     title_receive=request.form['memoTitle_give']
     contents_receive=request.form['memoContents_give']
+    memoLikes_receive=int(request.form['memoLikes_give'])
 
     inventory ={
         'title' : title_receive,
-        'contents' : contents_receive
+        'contents' : contents_receive,
+        'likes' : memoLikes_receive
     }
 
     try:
@@ -58,6 +60,20 @@ def edit_memos():
         return jsonify({'result':'success', 'msg':'수정 완료'})
     except Exception as e:
         return jsonify({'result': 'fail', 'msg': str(e)})
+    
+@app.route("/memos/delete", methods=["POST"])
+def delete_memos():
+    delete_receive=request.form['deleteId_give']
+    
+    try:
+        result = memos_col.delete_one(
+            {"_id": ObjectId(delete_receive)}
+        )
+        return jsonify({'result':'success','msg':'삭제 완료'})
+    except Exception as e:
+        print("ERROR", e)
+        return jsonify({'result': 'fail', 'msg': str(e)})
+        
 
 if __name__ == "__main__":
     app.run("0.0.0.0", port=5000, debug=True)

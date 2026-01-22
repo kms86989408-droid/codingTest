@@ -1,4 +1,4 @@
-d<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -86,13 +86,22 @@ d<!doctype html>
         font-size: 14px;
       }
 
-      .like-count{
+      .like-count {
         max-width: 50px;
         margin-top: 20px;
         text-align: center;
       }
 
-
+      #card-row.grid2{
+        display:grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      #card-row.grid3{
+        display:grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
     </style>
 
     <!-- ---Html--- -->
@@ -164,211 +173,237 @@ d<!doctype html>
 
   <!-- ---JavaScript--- -->
   <script>
-    let titleText = $("#title-text");
-    let memoText = $("#memo-text");
-    let saveBox = $("#btn-check-2");
+        let titleText = $("#title-text");
+        let memoText = $("#memo-text");
+        let saveBox = $("#btn-check-2");
 
-    $(document).ready(function () {
-      $("#card-row").html("");
-      getMemos();
-    });
+        $(document).ready(function () {
+          $("#card-row").html("");
+          getMemos();
+        });
 
-    // 버튼 클릭 이벤트
-    $("#btn-check-2").on("click", savingMemos);
+        // 버튼 클릭 이벤트
+        $("#btn-check-2").on("click", savingMemos);
 
-    // 수정 창 열림
-    $(document).on("click", ".edit-btn", function () {
-      // 선택Id 찾기
-      let editId = $(this).data("id");
-      
-      let $thisCard = $(this).closest(".card");
-      let $body = $thisCard.find(".card-body");
-      
-      if ($thisCard.find(".edit-form").length > 0) {
-        return;
-      }
+        // 수정 창 열림
+        $(document).on("click", ".edit-btn", function () {
+          // 선택Id 찾기
+          let editId = $(this).data("id");
 
-      let originTitle = $thisCard.find(".card-title").text();
-      let originContents = $thisCard.find(".card-text").text();
+          let $thisCard = $(this).closest(".card");
+          let $body = $thisCard.find(".card-body");
 
-      $thisCard.find(".card-title, .card-text, .tag-btn, .like-count").hide();
-
-      let editForm = `
-      <div class = "edit-form" data-id="${editId}">
-        <input type="text" class="form-control mb-2 edit-title" value="${originTitle}">
-        <textarea class="form-control edit-contents" rows="3">${originContents}</textarea>
-        <button type="button" class="btn btn-primary btn-sm edit-saveBtn">저장</button>
-        </div>
-        `;
-
-      $body.append(editForm);
-    });
-
-    //  수정 내용 저장
-    $(document).on("click", ".edit-saveBtn", function () {
-      let $editForm = $(this).closest(".edit-form");
-      let editId = $editForm.data("id");
-
-      let editTitle = $editForm.find(".edit-title").val();
-      let editContents = $editForm.find(".edit-contents").val();
-
-      
-
-      let $cardBody = $editForm.closest(".card-body");
-      $editForm.remove();
-      $cardBody.find(".card-title, .card-text, .tag-btn").show();
-      // console.log("card-body found:", $cardBody.length); 버그 확인용
-
-      $.ajax({
-        type: "PUT",
-        url: "/memos",
-        data: {
-          editId_give: editId,
-          editTitle_give: editTitle,
-          editContents_give: editContents,
-        },
-        success: function (response) {
-          if (response["result"] == "success") {
-            $cardBody.find(".card-title").text(editTitle);
-            $cardBody.find(".card-text").text(editContents);
-            $editForm.remove();
-            $cardBody.find(".card-title, .card-text, .tag-btn, .like-count").show();
-            // console.log("card-body found:", $cardBody.length); 버그 확인용
-            alert(response["msg"] || "수정 완료");
-            titleText.val("");
-            memoText.val("");
-          } else {
-            alert(response["msg"] || "수정 실패");
-          }
-        },
-        error: function (xhr) {
-          alert(`요청실패 ${xhr.status}`);
-        },
-      });
-    });
-
-    // 삭제 기능
-    $(document).on("click", ".delete-btn", function (){
-      // 선택Id 찾기
-      let deleteId = $(this).data("id");
-
-      $.ajax({
-        type:"POST",
-        url: "/memos/delete",
-        data:{
-          deleteId_give: deleteId
-        },
-        success: function(response){
-          if(response["result"] == "success"){
-            $("#card-row").empty();
-            getMemos();
-            alert(response["msg"]||"삭제 완료")
-          }else{
-            alert(response["msg"]||"삭제 실패")
-          }
-        },
-        error: function(xhr){
-          alert(`요청실패${xhr.status}`);
-        }
-      })
-      
-    })
-
-    // 좋아요 기능
-
-
-    function savingMemos() {
-      let memoTitle = titleText.val();
-      let memoContents = memoText.val();
-      let memoLikes = 0;
-
-      $.ajax({
-        type: "POST",
-        url: "/memos",
-        data: { memoTitle_give: memoTitle, memoContents_give: memoContents, memoLikes_give: memoLikes },
-        success: function (response) {
-          if (response["result"] == "success") {
-            alert(response["msg"] || "저장 완료");
-            titleText.val("");
-            memoText.val("");
-            // 카드 업데이트
-            $("#card-row").empty();
-            getMemos();
-          } else {
-            alert(response["msg"] || "저장 실패");
-          }
-        },
-        error: function (xhr) {
-          alert(`요청실패 ${xhr.status}`);
-        },
-      });
-    }
-
-    function getMemos() {
-      $.ajax({
-        type: "GET",
-        url: "/memos",
-        success: function (response) {
-          // console.log("GET /memos response", response);
-          // console.log("inventory[0] =", response.inventory[0]);
-
-          if (response["result"] !== "success") {
-            alert(response["msg"] || "불러오기 실패");
+          if ($thisCard.find(".edit-form").length > 0) {
             return;
           }
-          let inventory = response["inventory"] || [];
-          // 콘솔 확인용
-          // console.log(`inventory length${inventory.length}`);
-          // -------------
-          for (let i = 0; i < inventory.length; i++) {
-            // 콘솔 확인용
-            // console.log(
-            //   "데이터불러오기",
-            //   inventory[i]["title"] || "제목 없음",
-            //   inventory[i]["contents"] || "내용 없음",
-            //   inventory[i]["_id"],
-            // );
-            // -------------
 
-            postMemos(
-              inventory[i]["title"] || "제목 없음",
-              inventory[i]["contents"] || "내용 없음",
-              inventory[i]["_id"],
-              inventory[i]["likes"]
-            );
-          }
-        },
-        error: function (xhr) {
-          alert(`요청실패 ${xhr.status}`);
-        },
-      });
-    }
+          let originTitle = $thisCard.find(".card-title").text();
+          let originContents = $thisCard.find(".card-text").text();
 
-    // 메모추가
-    function postMemos(title, contents, id, likes = 0) {
-      let appendMemo = `
-      <div class="col" data-id="${id}">
-        <div class="card mx-auto">
-          <div class="card-body">
-            <h5 class="card-title">${title}</h5>
-            <p class="overflow-hidden card-text">${contents}</p>
-            <div class="like-count" data-id="${id}"">${likes}</div>
-            <div class="tag-btn">
-              <button type="button" class="btn btn-primary edit-btn" data-id="${id}">
-                수정
-              </button>
-              <button type="button" class="btn btn-primary delete-btn" data-id="${id}">
-                삭제
-              </button>
-              <button type="button" class="btn btn-primary like-btn" data-id="${id}">
-                좋아요!
-              </button>
+          $thisCard.find(".card-title, .card-text, .tag-btn, .like-count").hide();
+
+          let editForm = `
+          <div class = "edit-form" data-id="${editId}">
+            <input type="text" class="form-control mb-2 edit-title" value="${originTitle}">
+            <textarea class="form-control edit-contents" rows="3">${originContents}</textarea>
+            <button type="button" class="btn btn-primary btn-sm edit-saveBtn">저장</button>
             </div>
-          </div>
-        </div>
-      </div>`;
-      $("#card-row").append(appendMemo);
-      // console.log("카드생성완료");
-    }
+            `;
+
+          $body.append(editForm);
+        });
+
+        //  수정 내용 저장
+        $(document).on("click", ".edit-saveBtn", function () {
+          let $editForm = $(this).closest(".edit-form");
+          let editId = $editForm.data("id");
+
+          let editTitle = $editForm.find(".edit-title").val();
+          let editContents = $editForm.find(".edit-contents").val();
+
+
+
+          let $cardBody = $editForm.closest(".card-body");
+          $editForm.remove();
+          $cardBody.find(".card-title, .card-text, .tag-btn, .like-count").show();
+          // console.log("card-body found:", $cardBody.length); 버그 확인용
+
+          $.ajax({
+            type: "PUT",
+            url: "/memos",
+            data: {
+              editId_give: editId,
+              editTitle_give: editTitle,
+              editContents_give: editContents,
+            },
+            success: function (response) {
+              if (response["result"] == "success") {
+                $cardBody.find(".card-title").text(editTitle);
+                $cardBody.find(".card-text").text(editContents);
+                $editForm.remove();
+                $cardBody.find(".card-title, .card-text, .tag-btn, .like-count").show();
+                // console.log("card-body found:", $cardBody.length); 버그 확인용
+                alert(response["msg"] || "수정 완료");
+                titleText.val("");
+                memoText.val("");
+              } else {
+                alert(response["msg"] || "수정 실패");
+              }
+            },
+            error: function (xhr) {
+              alert(`요청실패 ${xhr.status}`);
+            },
+          });
+        });
+
+        // 삭제 기능
+        $(document).on("click", ".delete-btn", function (){
+          // 선택Id 찾기
+          let deleteId = $(this).data("id");
+
+          $.ajax({
+            type:"POST",
+            url: "/memos/delete",
+            data:{
+              deleteId_give: deleteId
+            },
+            success: function(response){
+              if(response["result"] == "success"){
+                $("#card-row").empty();
+                getMemos();
+                alert(response["msg"]||"삭제 완료")
+              }else{
+                alert(response["msg"]||"삭제 실패")
+              }
+            },
+            error: function(xhr){
+              alert(`요청실패${xhr.status}`);
+            }
+          })
+
+        })
+
+        // 좋아요 기능
+        $(document).on("click", ".like-btn", function (){
+          let likeId = $(this).data("id");
+          let $thisCard = $(this).closest(".card");
+          let $likeValue = $thisCard.find(".like-count");
+          
+
+          $.ajax({
+            type:"POST",
+            url:"/memos/like",
+            data:{likeId_give:likeId,},
+            success: function(response){
+              $("#card-row").empty();
+              getMemos();
+              if (response.result == "success"){}
+            else{
+              alert(response["msg"]||"좋아요 실패")
+            }},
+            error: function(xhr){
+              alert(`요청실패 ${xhr.status}`);
+            }
+          })})
+          
+        function savingMemos() {
+          let memoTitle = titleText.val();
+          let memoContents = memoText.val();
+          let memoLikes = 0;
+
+          $.ajax({
+            type: "POST",
+            url: "/memos",
+            data: { memoTitle_give: memoTitle, memoContents_give: memoContents, memoLikes_give: memoLikes },
+            success: function (response) {
+              if (response["result"] == "success") {
+                alert(response["msg"] || "저장 완료");
+                titleText.val("");
+                memoText.val("");
+                // 카드 업데이트
+                $("#card-row").empty();
+                getMemos();
+              } else {
+                alert(response["msg"] || "저장 실패");
+              }
+            },
+            error: function (xhr) {
+              alert(`요청실패 ${xhr.status}`);
+            }
+          });
+        }
+
+        function getMemos() {
+          $.ajax({
+            type: "GET",
+            url: "/memos",
+            success: function (response) {
+              // console.log("GET /memos response", response);
+              // console.log("inventory[0] =", response.inventory[0]);
+
+              if (response["result"] !== "success") {
+                alert(response["msg"] || "불러오기 실패");
+                return;
+              }
+              let inventory = response["inventory"] || [];
+              // 콘솔 확인용
+              // console.log(`inventory length${inventory.length}`);
+              // -------------
+              for (let i = 0; i < inventory.length; i++) {
+                // 콘솔 확인용
+                // console.log(
+                //   "데이터불러오기",
+                //   inventory[i]["title"] || "제목 없음",
+                //   inventory[i]["contents"] || "내용 없음",
+                //   inventory[i]["_id"],
+                // );
+                // -------------
+
+                postMemos(
+                  inventory[i]["title"] || "제목 없음",
+                  inventory[i]["contents"] || "내용 없음",
+                  inventory[i]["_id"],
+                  inventory[i]["likes"]
+                );
+              }
+            },
+            error: function (xhr) {
+              alert(`요청실패 ${xhr.status}`);
+            },
+          });
+        }
+
+        // 메모추가
+        function postMemos(title, contents, id, likes = 0) {
+          let appendMemo = `
+          <div class="col" data-id="${id}">
+            <div class="card mx-auto">
+              <div class="card-body">
+                <h5 class="card-title">${title}</h5>
+                <p class="overflow-hidden card-text">${contents}</p>
+                <div class="like-count" data-id="${id}">${likes}</div>
+                <div class="tag-btn">
+                  <button type="button" class="btn btn-primary edit-btn" data-id="${id}">
+                    수정
+                  </button>
+                  <button type="button" class="btn btn-primary delete-btn" data-id="${id}">
+                    삭제
+                  </button>
+                  <button type="button" class="btn btn-primary like-btn" data-id="${id}">
+                    좋아요!
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>`;
+          $("#card-row").append(appendMemo);
+          // console.log("카드생성완료");
+        }
+
+        // 2열 3열 변경
+        function applyColumns(){
+          let count = $("#card-row > .col").length;
+          $()
+        }
   </script>
 </html>

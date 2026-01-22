@@ -34,15 +34,13 @@ def saving_memos():
         print("ERROR", e)
         return jsonify({'result': 'fail', 'msg': str(e)})
 
-
-
 @app.route("/memos", methods=["GET"])
 def read_inventory():    
-    memos = list(memos_col.find({}))
+    memos = list(memos_col.find({}).sort("likes", -1))
     for m in memos:
         m["_id"] = str(m["_id"])
+        m["likes"]=m.get("likes",0)
     return jsonify({'result':"success", 'inventory': memos})
-
 
 @app.route("/memos", methods=["PUT"])
 def edit_memos():
@@ -73,6 +71,22 @@ def delete_memos():
     except Exception as e:
         print("ERROR", e)
         return jsonify({'result': 'fail', 'msg': str(e)})
+    
+@app.route("/memos/like", methods=["POST"])
+def add_likes():
+    likeId_receive=request.form['likeId_give']
+
+    try:
+        result = memos_col.update_one(
+            {"_id": ObjectId(likeId_receive)},
+            {'$inc':{"likes":1}}
+        )
+        memo = memos_col.find_one({"_id":ObjectId(likeId_receive)})
+        return jsonify({'result':'success', 'likes': memo.get('likes', 0)})
+    except Exception as e:
+        print("ERROR", e)
+        return jsonify({'result':'fail', 'msg':str(e)})
+
         
 
 if __name__ == "__main__":
